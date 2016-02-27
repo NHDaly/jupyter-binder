@@ -11,6 +11,6 @@ USER root
 #RUN apt-get install -y julia libnettle4 && apt-get clean
 #
 
-RUN b.gcr.io/tensorflow/tensorflow
+RUN b.gcr.io/tensorflow/tensorflow:latest
 
 #USER main

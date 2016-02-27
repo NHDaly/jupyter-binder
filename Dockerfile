@@ -12,5 +12,5 @@ MAINTAINER Nathan Daly <nhdaly@gmail.com>
 #
 #USER main
 
-RUN -it b.gcr.io/tensorflow/tensorflow
+RUN b.gcr.io/tensorflow/tensorflow
 

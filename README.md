@@ -1,9 +1,9 @@
-# ipython-binder
+# jupyter-binder
 
-Click the button below to run and play with the notebooks in this repo! (Binder [last built](http://mybinder.org/repo/NHDaly/ipython-binder/status) at [8b7613d](https://github.com/NHDaly/ipython-binder/commit/8b7613d)).
+Click the button below to run and play with the notebooks in this repo! (Binder [last built](http://mybinder.org/repo/NHDaly/jupyter-binder/status) at [8bec649](https://github.com/NHDaly/jupyter-binder/commit/8bec649)).
 
 Currently has Julia and TensorFlow installed.
 
 
-[![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/NHDaly/ipython-binder)
+[![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/NHDaly/jupyter-binder)
 

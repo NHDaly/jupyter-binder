@@ -23,7 +23,7 @@ RUN julia -e 'Pkg.add("Gadfly")' && julia -e 'Pkg.add("RDatasets")'
 
 # Install OpenAI's gym
 USER root
-RUN apt-get install -y python-numpy python-dev python-opengl
+RUN apt-get install -y python-numpy python-dev cmake zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig
 USER main
 
 RUN pip install gym

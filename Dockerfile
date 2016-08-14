@@ -7,8 +7,10 @@ MAINTAINER Nathan Daly <nhdaly@gmail.com>
 USER root
 
 # Install TensorFlow
-RUN pip install --upgrade https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-0.7.1-cp27-none-linux_x86_64.whl --ignore-installed
+# Ubuntu/Linux 64-bit, CPU only, Python 2.7
+RUN pip install --upgrade https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-0.10.0rc0-cp27-none-linux_x86_64.whl --ignore-installed
 #RUN b.gcr.io/tensorflow/tensorflow:latest
+RUN pip install prettytensor
 
 # Add Julia dependencies
 RUN apt-get update

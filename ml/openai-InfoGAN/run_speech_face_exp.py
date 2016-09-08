@@ -135,7 +135,7 @@ model = RegularizedGAN(
     batch_size=batch_size,
     image_shape=dataset.image_shape,
     # TODO: Add a speech_face (or even just face) network_type!!!!!
-    network_type="mnist",
+    network_type="face",
 )
 
 algo = InfoGANTrainer(
@@ -161,7 +161,7 @@ algo.train()
 
 
 
-# In[16]:
+# In[6]:
 
 def play_frames_clip(frames):
     ''' frames -- a list/array of np.array images. Plays all frames in the notebook as a clip.'''
@@ -175,6 +175,11 @@ def play_frames_clip(frames):
 
 print(dataset.image_shape)
 play_frames_clip([frame.reshape(dataset.image_shape[0], dataset.image_shape[1]) for frame in dataset.train.images[10:20]])
+
+
+# In[ ]:
+
+
 
 
 # In[ ]:

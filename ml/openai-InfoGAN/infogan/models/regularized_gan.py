@@ -77,11 +77,9 @@ class RegularizedGAN(object):
                      fc_batch_norm().
                      apply(leaky_rectify))
                 self.discriminator_template = shared_template.custom_fully_connected(1)
+                # NOTE: I've modified the encoder a bit, removing the extra layers.
                 self.encoder_template = \
                     (shared_template.
-                     custom_fully_connected(128).
-                     fc_batch_norm().
-                     apply(leaky_rectify).
                      custom_fully_connected(self.reg_latent_dist.dist_flat_dim))
 
             with tf.variable_scope("g_net"):
@@ -98,7 +96,7 @@ class RegularizedGAN(object):
                      conv_batch_norm().
                      apply(tf.nn.relu).
                      custom_deconv2d([0] + list(image_shape), k_h=4, k_w=4).
-                     # TODO: THIS NEXT LINE NEEDS TO CHANGE TO BE A SIGMOID (I think)
+                     # TODO: THIS LINE WAS ADDED BY ME -- IS IT RIGHT? Should it REPLACE the flatten() layer instead of being IN ADDITION to it?
                      apply(tf.nn.sigmoid).
                      flatten())
 

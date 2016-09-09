@@ -38,9 +38,14 @@ def ParitionData(images):
     test_images  = images[num_total_inputs*8/10:]
     
     return train_images, cv_images, test_images
+def normalize(x):
+    mu = np.mean(x)
+    sigma = np.std(x)
+    x_norm = (x - mu) / sigma  # All element-wise
+    return x_norm
 
 
-# In[4]:
+# In[34]:
 
 class SpeechFramesDataset(object):
     def __init__(self, video_file):
@@ -50,8 +55,9 @@ class SpeechFramesDataset(object):
         self.image_shape = (self.frame_height, self.frame_width, self.frame_depth)
         self.image_dim = self.frame_height * self.frame_width * self.frame_depth
 
-        all_images = self._load_frames(video_file)
-        train_images, cv_images, test_images = ParitionData(all_images)
+        self.raw_images = self._load_frames(video_file)
+        self.normalized_images = [normalize(x) for x in self.raw_images]
+        train_images, cv_images, test_images = ParitionData(self.normalized_images)
 
         self.train = Dataset(np.asarray(train_images))
         self.validation = Dataset(np.asarray(cv_images))
@@ -92,15 +98,7 @@ class SpeechFramesDataset(object):
         return data
 
 
-# In[ ]:
-
-
-
-
-# In[5]:
-
-now = datetime.datetime.now(dateutil.tz.tzlocal())
-timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
+# In[35]:
 
 root_log_dir = "logs/speech_face"
 root_checkpoint_dir = "ckt/speech_face"
@@ -108,13 +106,8 @@ batch_size = 128
 updates_per_epoch = 100
 max_epoch = 50
 
-exp_name = "speech_face_%s" % timestamp
 
-log_dir = os.path.join(root_log_dir, exp_name)
-checkpoint_dir = os.path.join(root_checkpoint_dir, exp_name)
-
-mkdir_p(log_dir)
-mkdir_p(checkpoint_dir)
+# In[37]:
 
 dataset = SpeechFramesDataset('../fareeds_take.2015.09.21.speech.full_res.crop.048x054.mov')
 
@@ -134,9 +127,22 @@ model = RegularizedGAN(
     latent_spec=latent_spec,
     batch_size=batch_size,
     image_shape=dataset.image_shape,
-    # TODO: Add a speech_face (or even just face) network_type!!!!!
-    network_type="face",
+    # TODO: switched back to mnist. I keep getting NaNs. :( Trying mnist w/ normalization now.
+    network_type="mnist",
 )
+
+
+# In[ ]:
+
+now = datetime.datetime.now(dateutil.tz.tzlocal())
+timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
+exp_name = "speech_mnist_normalized_%s" % timestamp
+
+log_dir = os.path.join(root_log_dir, exp_name)
+checkpoint_dir = os.path.join(root_checkpoint_dir, exp_name)
+
+mkdir_p(log_dir)
+mkdir_p(checkpoint_dir)
 
 algo = InfoGANTrainer(
     model=model,
@@ -161,7 +167,7 @@ algo.train()
 
 
 
-# In[6]:
+# In[30]:
 
 def play_frames_clip(frames):
     ''' frames -- a list/array of np.array images. Plays all frames in the notebook as a clip.'''
@@ -174,12 +180,27 @@ def play_frames_clip(frames):
         display.clear_output(wait=True)
 
 print(dataset.image_shape)
-play_frames_clip([frame.reshape(dataset.image_shape[0], dataset.image_shape[1]) for frame in dataset.train.images[10:20]])
+play_frames_clip([np.insert(np.insert(frame.reshape(dataset.image_shape[0], dataset.image_shape[1], 1), 0, 2, axis=2), 0, 2, axis=2) for frame in dataset.train.images[10:20]])
 
 
 # In[ ]:
 
 
+
+
+# In[33]:
+
+normalized_frames = [normalize(x) for x in dataset.train.images[10:20]]
+play_frames_clip([np.insert(np.insert(frame.reshape(dataset.image_shape[0], dataset.image_shape[1], 1), 0, 2, axis=2), 0, 2, axis=2) for frame in normalized_frames])
+
+
+# In[24]:
+
+print(dataset.raw_images[0][:20])
+print('--------------------')
+print(dataset.train.images[0][:20])
+print('--------------------')
+print(normalize(dataset.train.images[0][:20]))
 
 
 # In[ ]:

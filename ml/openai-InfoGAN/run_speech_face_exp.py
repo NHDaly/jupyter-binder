@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[2]:
 
 from __future__ import print_function
 from __future__ import absolute_import
@@ -23,12 +23,12 @@ import numpy as np
 FFMPEG_BIN = 'ffmpeg'
 
 
-# In[2]:
+# In[3]:
 
 #%matplotlib inline
 
 
-# In[3]:
+# In[4]:
 
 def ParitionData(images):
     num_total_inputs = len(images)
@@ -45,7 +45,7 @@ def normalize(x):
     return x_norm
 
 
-# In[34]:
+# In[19]:
 
 class SpeechFramesDataset(object):
     def __init__(self, video_file):
@@ -84,6 +84,8 @@ class SpeechFramesDataset(object):
                 break
             # transform the byte read into a numpy array
             image =  np.fromstring(raw_image, dtype='uint8')
+            if np.isnan(np.sum(image)):
+                raise Exception, "raw_image contained NaN!!: "+str(raw_image)
             #image = image.reshape(frame_dim)
             self.frames.append(image)
             # throw away the data in the pipe's buffer.
@@ -98,7 +100,7 @@ class SpeechFramesDataset(object):
         return data
 
 
-# In[35]:
+# In[20]:
 
 root_log_dir = "logs/speech_face"
 root_checkpoint_dir = "ckt/speech_face"
@@ -107,9 +109,12 @@ updates_per_epoch = 100
 max_epoch = 50
 
 
-# In[37]:
+# In[21]:
 
 dataset = SpeechFramesDataset('../fareeds_take.2015.09.21.speech.full_res.crop.048x054.mov')
+
+
+# In[ ]:
 
 # For now, copy the "C.4 Faces" input settings:
 # "For this task, we use 5 continuous latent codes and 128 noise variables, so the input to the generator has dimension 133."
@@ -136,7 +141,7 @@ model = RegularizedGAN(
 
 now = datetime.datetime.now(dateutil.tz.tzlocal())
 timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
-exp_name = "speech_mnist_normalized_%s" % timestamp
+exp_name = "mnist_mnist_normalized_%s" % timestamp
 
 log_dir = os.path.join(root_log_dir, exp_name)
 checkpoint_dir = os.path.join(root_checkpoint_dir, exp_name)

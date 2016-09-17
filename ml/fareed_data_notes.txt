@@ -1,0 +1,29 @@
+
+imovie_fareed      -- 1263 x 712
+imovie_fareed_crop --  377 x 427
+imovie_offset_bot_left 444 x 261
+imovie_offset_top_left 444 x  24
+
+original_fareed    -- 1280 x 720
+
+translated_crop ---->  382 x 432
+translated_offset -->  450 x 24
+
+
+===============================
+# Need to adjust to make scaling easier.
+
+adjusted_crop   ---->  384 x 432
+adjusted_offset   -->  449 x 24
+
+
+
+scaling_factor     --  .25   .25
+downscaled      ---->  96 x 108
+
+
+ffmpeg -i fareeds_take.2015.09.21.speech.full_res.mov -filter:v "crop=381:432:450:24" fareeds_take.2015.09.21.speech.full_res.crop.mov
+ffmpeg -i fareeds_take.2015.09.21.speech.full_res.crop.mov -vf scale=96:108 fareeds_take.2015.09.21.speech.full_res.crop.096x108.mov
+
+
+

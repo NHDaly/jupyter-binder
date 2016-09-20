@@ -45,7 +45,7 @@ def normalize(x):
     return x_norm
 
 
-# In[34]:
+# In[4]:
 
 class SpeechFramesDataset(object):
     def __init__(self, video_file):
@@ -98,16 +98,17 @@ class SpeechFramesDataset(object):
         return data
 
 
-# In[35]:
+# In[5]:
 
 root_log_dir = "logs/speech_face"
 root_checkpoint_dir = "ckt/speech_face"
 batch_size = 128
-updates_per_epoch = 100
-max_epoch = 50
+updates_per_epoch = 50    # How often to run the logging.
+checkpoint_snapshot_interval = 100  # Save a snapshot of the model every __ updates.
+max_epoch = 200
 
 
-# In[37]:
+# In[6]:
 
 dataset = SpeechFramesDataset('../fareeds_take.2015.09.21.speech.full_res.crop.048x054.mov')
 
@@ -128,11 +129,11 @@ model = RegularizedGAN(
     batch_size=batch_size,
     image_shape=dataset.image_shape,
     # TODO: switched back to mnist. I keep getting NaNs. :( Trying mnist w/ normalization now.
-    network_type="mnist",
+    network_type="face",
 )
 
 
-# In[ ]:
+# In[7]:
 
 now = datetime.datetime.now(dateutil.tz.tzlocal())
 timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
@@ -153,13 +154,41 @@ algo = InfoGANTrainer(
     checkpoint_dir=checkpoint_dir,
     max_epoch=max_epoch,
     updates_per_epoch=updates_per_epoch,
-    snapshot_interval=updates_per_epoch,
+    snapshot_interval=checkpoint_snapshot_interval,
     info_reg_coeff=1.0,
     generator_learning_rate=1e-3,
     discriminator_learning_rate=2e-4,
 )
 
-algo.train()
+
+# In[8]:
+
+# algo.visualize_all_factors()  # ... what does this do?
+
+
+# In[9]:
+
+sess = tf.Session()
+
+algo.train(sess=sess)
+
+
+# In[37]:
+
+tf_vars = tf.get_collection(tf.GraphKeys.VARIABLES)
+pretty_vars = {v.name: v for v in tf_vars}
+dict(pretty_vars.items()[:5])
+
+
+# In[38]:
+
+import math
+import numpy
+
+
+# In[39]:
+
+tf_var_vals = {v.name : sess.run(v) for v in tf_vars}
 
 
 # In[ ]:
@@ -167,7 +196,18 @@ algo.train()
 
 
 
-# In[30]:
+# In[42]:
+
+non_nans = {name : v for name,v in tf_var_vals.iteritems() if not np.any(np.isnan(v))}
+non_nans
+
+
+# In[19]:
+
+
+
+
+# In[58]:
 
 def play_frames_clip(frames):
     ''' frames -- a list/array of np.array images. Plays all frames in the notebook as a clip.'''
@@ -180,7 +220,7 @@ def play_frames_clip(frames):
         display.clear_output(wait=True)
 
 print(dataset.image_shape)
-play_frames_clip([np.insert(np.insert(frame.reshape(dataset.image_shape[0], dataset.image_shape[1], 1), 0, 2, axis=2), 0, 2, axis=2) for frame in dataset.train.images[10:20]])
+play_frames_clip([np.insert(np.insert(frame.reshape(dataset.image_shape[0], dataset.image_shape[1], 1), 0, 2, axis=2), 0, 2, axis=2) for frame in dataset.raw_images[10:20]])
 
 
 # In[ ]:
@@ -188,19 +228,24 @@ play_frames_clip([np.insert(np.insert(frame.reshape(dataset.image_shape[0], data
 
 
 
-# In[33]:
+# In[60]:
 
-normalized_frames = [normalize(x) for x in dataset.train.images[10:20]]
+normalized_frames = [normalize(x) for x in dataset.raw_images[10:20]]
 play_frames_clip([np.insert(np.insert(frame.reshape(dataset.image_shape[0], dataset.image_shape[1], 1), 0, 2, axis=2), 0, 2, axis=2) for frame in normalized_frames])
 
 
-# In[24]:
+# In[61]:
 
 print(dataset.raw_images[0][:20])
 print('--------------------')
 print(dataset.train.images[0][:20])
 print('--------------------')
-print(normalize(dataset.train.images[0][:20]))
+print(normalize(dataset.train.images[0])[:20])
+
+
+# In[ ]:
+
+
 
 
 # In[ ]:

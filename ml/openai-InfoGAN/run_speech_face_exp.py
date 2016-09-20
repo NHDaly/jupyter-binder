@@ -84,6 +84,8 @@ class SpeechFramesDataset(object):
                 break
             # transform the byte read into a numpy array
             image =  np.fromstring(raw_image, dtype='uint8')
+            if np.isnan(np.sum(image)):
+                raise Exception, "raw_image contained NaN!!: "+str(raw_image)
             #image = image.reshape(frame_dim)
             self.frames.append(image)
             # throw away the data in the pipe's buffer.
@@ -137,7 +139,7 @@ model = RegularizedGAN(
 
 now = datetime.datetime.now(dateutil.tz.tzlocal())
 timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
-exp_name = "speech_mnist_normalized_%s" % timestamp
+exp_name = "mnist_mnist_normalized_%s" % timestamp
 
 log_dir = os.path.join(root_log_dir, exp_name)
 checkpoint_dir = os.path.join(root_checkpoint_dir, exp_name)

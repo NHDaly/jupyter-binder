@@ -114,13 +114,10 @@ max_epoch = 200
 
 dataset = SpeechFramesDataset('../fareeds_take.2015.09.21.speech.full_res.crop.048x054.mov')
 
-# For now, copy the "C.4 Faces" input settings:
-# "For this task, we use 5 continuous latent codes and 128 noise variables, so the input to the generator has dimension 133."
+# Trying with the mnist latent_spec.
 latent_spec = [
-    (Uniform(128), False),  # Noise
-    (Uniform(1, fix_std=True), True),
-    (Uniform(1, fix_std=True), True),
-    (Uniform(1, fix_std=True), True),
+    (Uniform(62), False),
+    (Categorical(10), True),
     (Uniform(1, fix_std=True), True),
     (Uniform(1, fix_std=True), True),
 ]
@@ -131,7 +128,7 @@ model = RegularizedGAN(
     batch_size=batch_size,
     image_shape=dataset.image_shape,
     # TODO: switched back to mnist. I keep getting NaNs. :( Trying mnist w/ normalization now.
-    network_type="face",
+    network_type="mnist",
 )
 
 
@@ -139,7 +136,7 @@ model = RegularizedGAN(
 
 now = datetime.datetime.now(dateutil.tz.tzlocal())
 timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
-exp_name = "mnist_mnist_normalized_%s" % timestamp
+exp_name = "mnist_model_mnist_codes_normalized_fareed_%s" % timestamp
 
 log_dir = os.path.join(root_log_dir, exp_name)
 checkpoint_dir = os.path.join(root_checkpoint_dir, exp_name)
@@ -209,7 +206,7 @@ non_nans
 
 
 
-# In[58]:
+# In[13]:
 
 def play_frames_clip(frames):
     ''' frames -- a list/array of np.array images. Plays all frames in the notebook as a clip.'''
@@ -221,8 +218,8 @@ def play_frames_clip(frames):
         display.display(plt.gcf())
         display.clear_output(wait=True)
 
-print(dataset.image_shape)
 play_frames_clip([np.insert(np.insert(frame.reshape(dataset.image_shape[0], dataset.image_shape[1], 1), 0, 2, axis=2), 0, 2, axis=2) for frame in dataset.raw_images[10:20]])
+print(dataset.image_shape)
 
 
 # In[ ]:

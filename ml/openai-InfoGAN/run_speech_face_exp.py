@@ -25,7 +25,7 @@ FFMPEG_BIN = 'ffmpeg'
 
 # In[2]:
 
-#%matplotlib inline
+get_ipython().magic(u'matplotlib inline')
 
 
 # In[3]:
@@ -113,18 +113,51 @@ max_epoch = 200
 # In[6]:
 
 dataset = SpeechFramesDataset('../fareeds_take.2015.09.21.speech.full_res.crop.048x054.mov')
+#dataset = MnistDataset()
+
+
+# In[ ]:
+
+# For now, copy the "C.3 CelebA" input settings:
+# "For this task, we use 10 ten-dimensional categorical code and 128 noise variables, resulting in a concatenated dimension of 228.."
+c3_celebA_latent_spec = [
+    (Uniform(128), False),  # Noise
+    (Categorical(10), True),
+    (Categorical(10), True),
+    (Categorical(10), True),
+    (Categorical(10), True),
+    (Categorical(10), True),
+    (Categorical(10), True),
+    (Categorical(10), True),
+    (Categorical(10), True),
+    (Categorical(10), True),
+    (Categorical(10), True),
+]
+# For now, copy the "C.4 Faces" input settings:
+# "For this task, we use 5 continuous latent codes and 128 noise variables, so the input to the generator has dimension 133."
+c4_faces_latent_spec = [
+    (Uniform(128), False),  # Noise
+    (Uniform(1, fix_std=True), True),
+    (Uniform(1, fix_std=True), True),
+    (Uniform(1, fix_std=True), True),
+    (Uniform(1, fix_std=True), True),
+    (Uniform(1, fix_std=True), True),
+]
 
 # Trying with the mnist latent_spec.
-latent_spec = [
+c1_mnist_latent_spec = [
     (Uniform(62), False),
     (Categorical(10), True),
     (Uniform(1, fix_std=True), True),
     (Uniform(1, fix_std=True), True),
 ]
 
+
+# In[ ]:
+
 model = RegularizedGAN(
     output_dist=MeanBernoulli(dataset.image_dim),
-    latent_spec=latent_spec,
+    latent_spec=c1_mnist_latent_spec,  # For now, trying with the mnist latent_spec.
     batch_size=batch_size,
     image_shape=dataset.image_shape,
     # TODO: switched back to mnist. I keep getting NaNs. :( Trying mnist w/ normalization now.

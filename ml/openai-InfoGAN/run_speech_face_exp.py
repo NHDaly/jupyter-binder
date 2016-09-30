@@ -48,10 +48,10 @@ def normalize(x):
 # In[4]:
 
 class SpeechFramesDataset(object):
-    def __init__(self, video_file):
-        self.frame_width  = 28
-        self.frame_height = 28
-        self.frame_depth  =  1 # (number of colors)
+    def __init__(self, video_file, image_width, image_height, image_depth = 1):
+        self.frame_width  = image_width
+        self.frame_height = image_height
+        self.frame_depth  = image_depth # (number of colors)
         self.image_shape = (self.frame_height, self.frame_width, self.frame_depth)
         self.image_dim = self.frame_height * self.frame_width * self.frame_depth
 
@@ -65,10 +65,14 @@ class SpeechFramesDataset(object):
         
     def _open_video_pipe(self, video_file):
         import subprocess as sp
+        pix_fmt = ''
+        if self.frame_depth == 1:   pix_fmt = 'gray'
+        elif self.frame_depth == 3: pix_fmt = 'rgb'
+        else:                       raise "Bad image_depth"
         command = [ FFMPEG_BIN,
             '-i', video_file,
             '-f', 'image2pipe',
-            '-pix_fmt', 'gray',
+            '-pix_fmt', pix_fmt,
             '-s', '{0}x{1}'.format(self.frame_width, self.frame_height), # -s 1280x960
             '-vcodec', 'rawvideo', '-']
         self.video_pipe = sp.Popen(command, stdout = sp.PIPE, bufsize=10**8)
@@ -106,17 +110,11 @@ root_log_dir = "logs/speech_face"
 root_checkpoint_dir = "ckt/speech_face"
 batch_size = 128
 updates_per_epoch = 50    # How often to run the logging.
-checkpoint_snapshot_interval = 100  # Save a snapshot of the model every __ updates.
+checkpoint_snapshot_interval = 1000  # Save a snapshot of the model every __ updates.
 max_epoch = 200
 
 
 # In[6]:
-
-dataset = SpeechFramesDataset('../fareeds_take.2015.09.21.speech.full_res.crop.048x054.mov')
-#dataset = MnistDataset()
-
-
-# In[ ]:
 
 # For now, copy the "C.3 CelebA" input settings:
 # "For this task, we use 10 ten-dimensional categorical code and 128 noise variables, resulting in a concatenated dimension of 228.."
@@ -133,6 +131,8 @@ c3_celebA_latent_spec = [
     (Categorical(10), True),
     (Categorical(10), True),
 ]
+c3_celebA_image_size = 32
+
 # For now, copy the "C.4 Faces" input settings:
 # "For this task, we use 5 continuous latent codes and 128 noise variables, so the input to the generator has dimension 133."
 c4_faces_latent_spec = [
@@ -143,6 +143,7 @@ c4_faces_latent_spec = [
     (Uniform(1, fix_std=True), True),
     (Uniform(1, fix_std=True), True),
 ]
+c3_faces_image_size = 32
 
 # Trying with the mnist latent_spec.
 c1_mnist_latent_spec = [
@@ -151,21 +152,31 @@ c1_mnist_latent_spec = [
     (Uniform(1, fix_std=True), True),
     (Uniform(1, fix_std=True), True),
 ]
-
-
-# In[ ]:
-
-model = RegularizedGAN(
-    output_dist=MeanBernoulli(dataset.image_dim),
-    latent_spec=c1_mnist_latent_spec,  # For now, trying with the mnist latent_spec.
-    batch_size=batch_size,
-    image_shape=dataset.image_shape,
-    # TODO: switched back to mnist. I keep getting NaNs. :( Trying mnist w/ normalization now.
-    network_type="mnist",
-)
+c3_mnist_image_size = 28
 
 
 # In[7]:
+
+grayscale = 1
+color = 3
+dataset = SpeechFramesDataset('../fareeds_take.2015.09.21.speech.full_res.crop.048x054.mov',
+                              c3_celebA_image_size, c3_celebA_image_size, grayscale)
+#dataset = MnistDataset()
+
+
+# In[8]:
+
+model = RegularizedGAN(
+    output_dist=MeanBernoulli(dataset.image_dim),
+    latent_spec=c3_celebA_latent_spec,  # For now, trying with the mnist latent_spec.
+    batch_size=batch_size,
+    image_shape=dataset.image_shape,
+    # Trying with my new celebA network!
+    network_type="celebA",
+)
+
+
+# In[9]:
 
 now = datetime.datetime.now(dateutil.tz.tzlocal())
 timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
@@ -193,16 +204,21 @@ algo = InfoGANTrainer(
 )
 
 
-# In[8]:
+# In[10]:
 
 # algo.visualize_all_factors()  # ... what does this do?
 
 
-# In[9]:
+# In[ ]:
 
 sess = tf.Session()
 
 algo.train(sess=sess)
+
+
+# In[ ]:
+
+
 
 
 # In[37]:

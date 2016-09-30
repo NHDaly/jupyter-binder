@@ -63,6 +63,7 @@ class RegularizedGAN(object):
                      apply(tf.nn.relu).
                      custom_deconv2d([0] + list(image_shape), k_h=4, k_w=4).
                      flatten())
+
         elif network_type == "face":
             with tf.variable_scope("d_net"):
                 shared_template = \
@@ -99,7 +100,47 @@ class RegularizedGAN(object):
                      # TODO: THIS LINE WAS ADDED BY ME -- IS IT RIGHT? Should it REPLACE the flatten() layer instead of being IN ADDITION to it?
                      apply(tf.nn.sigmoid).
                      flatten())
+        
+        elif network_type == "celebA":
+            with tf.variable_scope("d_net"):
+                shared_template = \
+                    (pt.template("input").
+                     reshape([-1] + list(image_shape)).
+                     custom_conv2d(64, k_h=4, k_w=4).
+                     apply(leaky_rectify).
+                     custom_conv2d(128, k_h=4, k_w=4).
+                     conv_batch_norm().
+                     apply(leaky_rectify).
+                     custom_conv2d(256, k_h=4, k_w=4).
+                     conv_batch_norm().
+                     apply(leaky_rectify))
+                self.discriminator_template = shared_template.custom_fully_connected(1)
+                self.encoder_template = \
+                    (shared_template.
+                     custom_fully_connected(128).
+                     fc_batch_norm().
+                     apply(leaky_rectify).
+                     custom_fully_connected(self.reg_latent_dist.dist_flat_dim))
 
+            with tf.variable_scope("g_net"):
+                self.generator_template = \
+                    (pt.template("input").
+                     custom_fully_connected(image_size / 16 * image_size / 16 * 448).
+                     fc_batch_norm().
+                     apply(tf.nn.relu).
+                     reshape([-1, image_size / 16, image_size / 16, 448]).
+                     custom_deconv2d([0, image_size / 8, image_size / 8, 256], k_h=4, k_w=4).
+                     conv_batch_norm().
+                     apply(tf.nn.relu).
+                     custom_deconv2d([0, image_size / 4, image_size / 4, 128], k_h=4, k_w=4).
+                     apply(tf.nn.relu).
+                     custom_deconv2d([0, image_size / 2, image_size / 2, 64], k_h=4, k_w=4).
+                     apply(tf.nn.relu).
+                     custom_deconv2d([0, image_size / 1, image_size / 1, 1], k_h=4, k_w=4).
+                     # TODO(nhdaly): Switch to this next line once you make the image color.
+                     #custom_deconv2d([0, image_size / 1, image_size / 1, 3], k_h=4, k_w=4).
+                     apply(tf.nn.tanh).
+                     flatten())
         else:
             raise NotImplementedError
 

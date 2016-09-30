@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[2]:
+# In[1]:
 
 from __future__ import print_function
 from __future__ import absolute_import
@@ -23,12 +23,12 @@ import numpy as np
 FFMPEG_BIN = 'ffmpeg'
 
 
+# In[2]:
+
+get_ipython().magic(u'matplotlib inline')
+
+
 # In[3]:
-
-#%matplotlib inline
-
-
-# In[4]:
 
 def ParitionData(images):
     num_total_inputs = len(images)
@@ -45,7 +45,7 @@ def normalize(x):
     return x_norm
 
 
-# In[19]:
+# In[4]:
 
 class SpeechFramesDataset(object):
     def __init__(self, video_file):
@@ -100,7 +100,7 @@ class SpeechFramesDataset(object):
         return data
 
 
-# In[20]:
+# In[5]:
 
 root_log_dir = "logs/speech_face"
 root_checkpoint_dir = "ckt/speech_face"
@@ -109,16 +109,31 @@ updates_per_epoch = 100
 max_epoch = 50
 
 
-# In[21]:
+# In[6]:
 
 dataset = SpeechFramesDataset('../fareeds_take.2015.09.21.speech.full_res.crop.048x054.mov')
 
 
-# In[ ]:
+# In[7]:
 
+# For now, copy the "C.3 CelebA" input settings:
+# "For this task, we use 10 ten-dimensional categorical code and 128 noise variables, resulting in a concatenated dimension of 228.."
+c3CelebA_latent_spec = [
+    (Uniform(128), False),  # Noise
+    (Categorical(10), True),
+    (Categorical(10), True),
+    (Categorical(10), True),
+    (Categorical(10), True),
+    (Categorical(10), True),
+    (Categorical(10), True),
+    (Categorical(10), True),
+    (Categorical(10), True),
+    (Categorical(10), True),
+    (Categorical(10), True),
+]
 # For now, copy the "C.4 Faces" input settings:
 # "For this task, we use 5 continuous latent codes and 128 noise variables, so the input to the generator has dimension 133."
-latent_spec = [
+c4Faces_latent_spec = [
     (Uniform(128), False),  # Noise
     (Uniform(1, fix_std=True), True),
     (Uniform(1, fix_std=True), True),
@@ -127,9 +142,12 @@ latent_spec = [
     (Uniform(1, fix_std=True), True),
 ]
 
+
+# In[8]:
+
 model = RegularizedGAN(
     output_dist=MeanBernoulli(dataset.image_dim),
-    latent_spec=latent_spec,
+    latent_spec=c3CelebA_latent_spec,
     batch_size=batch_size,
     image_shape=dataset.image_shape,
     # TODO: switched back to mnist. I keep getting NaNs. :( Trying mnist w/ normalization now.

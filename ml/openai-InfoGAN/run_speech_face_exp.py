@@ -48,7 +48,7 @@ def normalize(x):
 # In[4]:
 
 class SpeechFramesDataset(object):
-    def __init__(self, video_file, image_width, image_height, image_depth = 1):
+    def __init__(self, video_file, image_width, image_height, image_depth = 1, normalize_images = False):
         self.frame_width  = image_width
         self.frame_height = image_height
         self.frame_depth  = image_depth # (number of colors)
@@ -57,7 +57,8 @@ class SpeechFramesDataset(object):
 
         self.raw_images = self._load_frames(video_file)
         self.normalized_images = [normalize(x) for x in self.raw_images]
-        train_images, cv_images, test_images = ParitionData(self.normalized_images)
+        dataset = self.normalized_images if normalize == True else self.raw_images
+        train_images, cv_images, test_images = ParitionData(dataset)
 
         self.train = Dataset(np.asarray(train_images))
         self.validation = Dataset(np.asarray(cv_images))
@@ -67,7 +68,7 @@ class SpeechFramesDataset(object):
         import subprocess as sp
         pix_fmt = ''
         if self.frame_depth == 1:   pix_fmt = 'gray'
-        elif self.frame_depth == 3: pix_fmt = 'rgb'
+        elif self.frame_depth == 3: pix_fmt = 'rgb24'
         else:                       raise "Bad image_depth"
         command = [ FFMPEG_BIN,
             '-i', video_file,
@@ -160,8 +161,18 @@ c3_mnist_image_size = 28
 grayscale = 1
 color = 3
 dataset = SpeechFramesDataset('../fareeds_take.2015.09.21.speech.full_res.crop.048x054.mov',
-                              c3_celebA_image_size, c3_celebA_image_size, grayscale)
+                              c3_celebA_image_size, c3_celebA_image_size, color, normalize_images=False)
 #dataset = MnistDataset()
+
+
+# In[ ]:
+
+
+
+
+# In[ ]:
+
+
 
 
 # In[8]:
@@ -180,7 +191,7 @@ model = RegularizedGAN(
 
 now = datetime.datetime.now(dateutil.tz.tzlocal())
 timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
-exp_name = "mnist_model_mnist_codes_normalized_fareed_%s" % timestamp
+exp_name = "celebA_model_celebA_codes_color_raw_fareed_%s" % timestamp
 
 log_dir = os.path.join(root_log_dir, exp_name)
 checkpoint_dir = os.path.join(root_checkpoint_dir, exp_name)
@@ -209,7 +220,7 @@ algo = InfoGANTrainer(
 # algo.visualize_all_factors()  # ... what does this do?
 
 
-# In[11]:
+# In[ ]:
 
 sess = tf.Session()
 

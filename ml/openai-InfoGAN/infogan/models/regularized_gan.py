@@ -136,9 +136,7 @@ class RegularizedGAN(object):
                      apply(tf.nn.relu).
                      custom_deconv2d([0, image_size / 2, image_size / 2, 64], k_h=4, k_w=4).
                      apply(tf.nn.relu).
-                     custom_deconv2d([0, image_size / 1, image_size / 1, 1], k_h=4, k_w=4).
-                     # TODO(nhdaly): Switch to this next line once you make the image color.
-                     #custom_deconv2d([0, image_size / 1, image_size / 1, 3], k_h=4, k_w=4).
+                     custom_deconv2d([0, image_size / 1, image_size / 1, 3], k_h=4, k_w=4).
                      apply(tf.nn.tanh).
                      flatten())
         else:

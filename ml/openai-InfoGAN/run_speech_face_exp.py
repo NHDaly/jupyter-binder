@@ -209,7 +209,7 @@ algo = InfoGANTrainer(
 # algo.visualize_all_factors()  # ... what does this do?
 
 
-# In[ ]:
+# In[11]:
 
 sess = tf.Session()
 
@@ -221,20 +221,20 @@ algo.train(sess=sess)
 
 
 
-# In[37]:
+# In[12]:
 
 tf_vars = tf.get_collection(tf.GraphKeys.VARIABLES)
 pretty_vars = {v.name: v for v in tf_vars}
 dict(pretty_vars.items()[:5])
 
 
-# In[38]:
+# In[13]:
 
 import math
 import numpy
 
 
-# In[39]:
+# In[14]:
 
 tf_var_vals = {v.name : sess.run(v) for v in tf_vars}
 
@@ -244,7 +244,7 @@ tf_var_vals = {v.name : sess.run(v) for v in tf_vars}
 
 
 
-# In[42]:
+# In[15]:
 
 non_nans = {name : v for name,v in tf_var_vals.iteritems() if not np.any(np.isnan(v))}
 non_nans

@@ -191,7 +191,7 @@ model = RegularizedGAN(
 
 now = datetime.datetime.now(dateutil.tz.tzlocal())
 timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
-exp_name = "celebA_model_celebA_codes_color_raw_fareed_%s" % timestamp
+exp_name = "celebA_model_celebA_codes_color_raw_fareed_g1e-5_%s" % timestamp
 
 log_dir = os.path.join(root_log_dir, exp_name)
 checkpoint_dir = os.path.join(root_checkpoint_dir, exp_name)
@@ -210,8 +210,8 @@ algo = InfoGANTrainer(
     updates_per_epoch=updates_per_epoch,
     snapshot_interval=checkpoint_snapshot_interval,
     info_reg_coeff=1.0,
-    generator_learning_rate=1e-3,
-    discriminator_learning_rate=2e-4,
+    generator_learning_rate=1e-5,  # original paper's learning rate was 1e-3
+    discriminator_learning_rate=2e-6,  # original paper's learning rate was 2e-4
 )
 
 
@@ -266,7 +266,7 @@ non_nans
 
 
 
-# In[13]:
+# In[16]:
 
 def play_frames_clip(frames):
     ''' frames -- a list/array of np.array images. Plays all frames in the notebook as a clip.'''
@@ -278,7 +278,8 @@ def play_frames_clip(frames):
         display.display(plt.gcf())
         display.clear_output(wait=True)
 
-play_frames_clip([np.insert(np.insert(frame.reshape(dataset.image_shape[0], dataset.image_shape[1], 1), 0, 2, axis=2), 0, 2, axis=2) for frame in dataset.raw_images[10:20]])
+# Gray Images: play_frames_clip([np.insert(np.insert(frame.reshape(dataset.image_shape[0], dataset.image_shape[1], 1), 0, 2, axis=2), 0, 2, axis=2) for frame in dataset.raw_images[10:20]])
+play_frames_clip([frame.reshape(dataset.image_shape) for frame in dataset.raw_images[10:50]])
 print(dataset.image_shape)
 
 
@@ -287,10 +288,11 @@ print(dataset.image_shape)
 
 
 
-# In[60]:
+# In[18]:
 
 normalized_frames = [normalize(x) for x in dataset.raw_images[10:20]]
-play_frames_clip([np.insert(np.insert(frame.reshape(dataset.image_shape[0], dataset.image_shape[1], 1), 0, 2, axis=2), 0, 2, axis=2) for frame in normalized_frames])
+#play_frames_clip([np.insert(np.insert(frame.reshape(dataset.image_shape[0], dataset.image_shape[1], 1), 0, 2, axis=2), 0, 2, axis=2) for frame in normalized_frames])
+play_frames_clip([frame.reshape(dataset.image_shape) for frame in normalized_frames])
 
 
 # In[61]:

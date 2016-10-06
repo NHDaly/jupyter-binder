@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[2]:
 
 from __future__ import print_function
 from __future__ import absolute_import
@@ -20,15 +20,17 @@ import datetime
 
 import numpy as np
 
+from celebA_dataset import CelebADataset
+
 FFMPEG_BIN = 'ffmpeg'
 
 
-# In[2]:
-
-get_ipython().magic(u'matplotlib inline')
-
-
 # In[3]:
+
+#%matplotlib inline
+
+
+# In[4]:
 
 def ParitionData(images):
     num_total_inputs = len(images)
@@ -45,7 +47,7 @@ def normalize(x):
     return x_norm
 
 
-# In[4]:
+# In[5]:
 
 class SpeechFramesDataset(object):
     def __init__(self, video_file, image_width, image_height, image_depth = 1, normalize_images = False):
@@ -105,7 +107,7 @@ class SpeechFramesDataset(object):
         return data
 
 
-# In[5]:
+# In[6]:
 
 root_log_dir = "logs/speech_face"
 root_checkpoint_dir = "ckt/speech_face"
@@ -115,7 +117,7 @@ checkpoint_snapshot_interval = 1000  # Save a snapshot of the model every __ upd
 max_epoch = 200
 
 
-# In[6]:
+# In[7]:
 
 # For now, copy the "C.3 CelebA" input settings:
 # "For this task, we use 10 ten-dimensional categorical code and 128 noise variables, resulting in a concatenated dimension of 228.."
@@ -156,13 +158,17 @@ c1_mnist_latent_spec = [
 c3_mnist_image_size = 28
 
 
-# In[7]:
+# In[8]:
 
 grayscale = 1
 color = 3
-dataset = SpeechFramesDataset('../fareeds_take.2015.09.21.speech.full_res.crop.048x054.mov',
-                              c3_celebA_image_size, c3_celebA_image_size, color, normalize_images=False)
+#dataset = SpeechFramesDataset('../fareeds_take.2015.09.21.speech.full_res.crop.048x054.mov',
+#                              c3_celebA_image_size, c3_celebA_image_size, color, normalize_images=False)
 #dataset = MnistDataset()
+dataset = CelebADataset(10)  # The full dataset is enourmous (202,599 frames). Currently, I have only 4739 frames from Fareed dataset.
+
+print(len(dataset.raw_images))
+print(len(dataset.train.images))
 
 
 # In[ ]:
@@ -170,12 +176,17 @@ dataset = SpeechFramesDataset('../fareeds_take.2015.09.21.speech.full_res.crop.0
 
 
 
+# In[9]:
+
+print(dataset.image_shape)
+
+
 # In[ ]:
 
 
 
 
-# In[8]:
+# In[10]:
 
 model = RegularizedGAN(
     output_dist=MeanBernoulli(dataset.image_dim),
@@ -187,11 +198,11 @@ model = RegularizedGAN(
 )
 
 
-# In[9]:
+# In[11]:
 
 now = datetime.datetime.now(dateutil.tz.tzlocal())
 timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
-exp_name = "celebA_model_celebA_codes_color_raw_fareed_g1e-5_%s" % timestamp
+exp_name = "celebA_model_celebA_codes_color_img-align-celeba_full_%s" % timestamp
 
 log_dir = os.path.join(root_log_dir, exp_name)
 checkpoint_dir = os.path.join(root_checkpoint_dir, exp_name)
@@ -210,12 +221,12 @@ algo = InfoGANTrainer(
     updates_per_epoch=updates_per_epoch,
     snapshot_interval=checkpoint_snapshot_interval,
     info_reg_coeff=1.0,
-    generator_learning_rate=1e-5,  # original paper's learning rate was 1e-3
-    discriminator_learning_rate=2e-6,  # original paper's learning rate was 2e-4
+    generator_learning_rate=1e-3,  # original paper's learning rate was 1e-3
+    discriminator_learning_rate=2e-4,  # original paper's learning rate was 2e-4
 )
 
 
-# In[10]:
+# In[ ]:
 
 # algo.visualize_all_factors()  # ... what does this do?
 
@@ -232,20 +243,20 @@ algo.train(sess=sess)
 
 
 
-# In[12]:
+# In[ ]:
 
 tf_vars = tf.get_collection(tf.GraphKeys.VARIABLES)
 pretty_vars = {v.name: v for v in tf_vars}
 dict(pretty_vars.items()[:5])
 
 
-# In[13]:
+# In[ ]:
 
 import math
 import numpy
 
 
-# In[14]:
+# In[ ]:
 
 tf_var_vals = {v.name : sess.run(v) for v in tf_vars}
 
@@ -255,18 +266,18 @@ tf_var_vals = {v.name : sess.run(v) for v in tf_vars}
 
 
 
-# In[15]:
+# In[ ]:
 
 non_nans = {name : v for name,v in tf_var_vals.iteritems() if not np.any(np.isnan(v))}
 non_nans
 
 
-# In[19]:
+# In[ ]:
 
 
 
 
-# In[16]:
+# In[1]:
 
 def play_frames_clip(frames):
     ''' frames -- a list/array of np.array images. Plays all frames in the notebook as a clip.'''
@@ -279,7 +290,7 @@ def play_frames_clip(frames):
         display.clear_output(wait=True)
 
 # Gray Images: play_frames_clip([np.insert(np.insert(frame.reshape(dataset.image_shape[0], dataset.image_shape[1], 1), 0, 2, axis=2), 0, 2, axis=2) for frame in dataset.raw_images[10:20]])
-play_frames_clip([frame.reshape(dataset.image_shape) for frame in dataset.raw_images[10:50]])
+play_frames_clip([frame.reshape(dataset.image_shape) for frame in dataset.raw_images[10:20]])
 print(dataset.image_shape)
 
 
@@ -288,18 +299,23 @@ print(dataset.image_shape)
 
 
 
-# In[18]:
+# In[ ]:
+
+
+
+
+# In[ ]:
 
 normalized_frames = [normalize(x) for x in dataset.raw_images[10:20]]
 #play_frames_clip([np.insert(np.insert(frame.reshape(dataset.image_shape[0], dataset.image_shape[1], 1), 0, 2, axis=2), 0, 2, axis=2) for frame in normalized_frames])
 play_frames_clip([frame.reshape(dataset.image_shape) for frame in normalized_frames])
 
 
-# In[61]:
+# In[9]:
 
-print(dataset.raw_images[0][:20])
+print(dataset.raw_images[0])
 print('--------------------')
-print(dataset.train.images[0][:20])
+print(dataset.train.images[0])
 print('--------------------')
 print(normalize(dataset.train.images[0])[:20])
 

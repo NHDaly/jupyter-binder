@@ -100,7 +100,7 @@ class RegularizedGAN(object):
                      # TODO: THIS LINE WAS ADDED BY ME -- IS IT RIGHT? Should it REPLACE the flatten() layer instead of being IN ADDITION to it?
                      apply(tf.nn.sigmoid).
                      flatten())
-        
+
         elif network_type == "celebA":
             with tf.variable_scope("d_net"):
                 shared_template = \
@@ -129,6 +129,8 @@ class RegularizedGAN(object):
                      fc_batch_norm().
                      apply(tf.nn.relu).
                      reshape([-1, image_size / 16, image_size / 16, 448]).
+                     # I am *pretty sure* each of these dimensions grow by 2x
+                     # because the stride==2.
                      custom_deconv2d([0, image_size / 8, image_size / 8, 256], k_h=4, k_w=4).
                      conv_batch_norm().
                      apply(tf.nn.relu).

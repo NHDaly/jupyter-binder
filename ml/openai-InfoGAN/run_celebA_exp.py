@@ -57,7 +57,7 @@ c3_celebA_image_size = 32
 
 # In[ ]:
 
-dataset = CelebADataset()  # The full dataset is enourmous (202,599 frames).
+dataset = CelebADataset()  # The full dataset is enormous (202,599 frames).
 
 print("Loaded {} images into Dataset.".format(len(dataset.raw_images)))
 print("Split {} images into training set.".format(len(dataset.train.images)))

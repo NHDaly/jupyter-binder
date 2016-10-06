@@ -7,20 +7,18 @@ from __future__ import print_function
 from __future__ import absolute_import
 from infogan.misc.distributions import Uniform, Categorical, Gaussian, MeanBernoulli
 
-
 import tensorflow as tf
-import os
 from infogan.misc.datasets import Dataset, MnistDataset
+from celebA_dataset import CelebADataset
 from infogan.models.regularized_gan import RegularizedGAN
 from infogan.algos.infogan_trainer import InfoGANTrainer
 from infogan.misc.utils import mkdir_p
 import dateutil
 import dateutil.tz
 import datetime
+import os
 
 import numpy as np
-
-from celebA_dataset import CelebADataset
 
 FFMPEG_BIN = 'ffmpeg'
 

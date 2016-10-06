@@ -1,16 +1,20 @@
 
 # coding: utf-8
 
-# In[26]:
+# In[1]:
 
 import numpy as np
-import os, re
+import os,sys, re
 from scipy import ndimage, misc
+
+module_path = os.path.abspath(os.path.join('..','..'))   # This is an unfortunate hack to get
+if module_path not in sys.path:                          #  relative imports from an .ipynb file
+    sys.path.append(module_path)                         #  to other adjacent modules.
 
 from infogan.misc.datasets import Dataset
 
 
-# In[27]:
+# In[2]:
 
 def load_all_images_from_dir(directory_path, num_images_to_grab = None, crop_size = (32,32)):
     '''
@@ -39,7 +43,7 @@ def ParitionData(images):
     return train_images, cv_images, test_images
 
 
-# In[35]:
+# In[3]:
 
 class CelebADataset(object):
     def __init__(self, num_images_to_grab = None):
@@ -53,22 +57,6 @@ class CelebADataset(object):
         self.validation = Dataset(np.asarray(cv_images))
         self.test = Dataset(np.asarray(test_images))
 
-        ## make sure that each type of digits have exactly 10 samples
-        #sup_images = []
-        #sup_labels = []
-        #rnd_state = np.random.get_state()
-        #np.random.seed(0)
-        #for cat in range(10):
-        #    ids = np.where(self.train.labels == cat)[0]
-        #    np.random.shuffle(ids)
-        #    sup_images.extend(self.train.images[ids[:10]])
-        #    sup_labels.extend(self.train.labels[ids[:10]])
-        #np.random.set_state(rnd_state)
-        #self.supervised_train = Dataset(
-        #    np.asarray(sup_images),
-        #    np.asarray(sup_labels),
-        #)
-        
         self.image_dim = 32*32*3
         self.image_shape = (32,32,3)
 
@@ -77,26 +65,6 @@ class CelebADataset(object):
 
     def inverse_transform(self, data):
         return data
-
-
-# In[36]:
-
-partial_dataset = CelebADataset(10)
-
-
-# In[37]:
-
-partial_dataset.train.images.shape
-
-
-# In[ ]:
-
-32*32*3
-
-
-# In[ ]:
-
-
 
 
 # In[ ]:

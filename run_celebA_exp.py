@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 from __future__ import print_function
 from __future__ import absolute_import
@@ -20,12 +20,12 @@ import os
 import numpy as np
 
 
-# In[ ]:
+# In[2]:
 
 #%matplotlib inline
 
 
-# In[ ]:
+# In[3]:
 
 root_log_dir = "logs/celebA"
 root_checkpoint_dir = "ckt/celebA"
@@ -111,7 +111,9 @@ algo = InfoGANTrainer(
 
 # In[ ]:
 
-algo.train()
+sess = tf.Session()
+
+algo.train(sess=sess)
 
 
 # In[ ]:
@@ -143,12 +145,14 @@ print(dataset.image_shape)
 
 # In[ ]:
 
-
+generated_images = sess.run(algo.fake_x)
+generated_images.shape
 
 
 # In[ ]:
 
-
+print("Displaying a batch of GENERATED Images...")
+play_frames_clip([frame.reshape(dataset.image_shape) for frame in generated_images])
 
 
 # In[ ]:

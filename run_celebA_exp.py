@@ -1,6 +1,12 @@
 
 # coding: utf-8
 
+# # Reimplementing the CelebA experiment
+# 
+# In this notebook, I'm trying to reimplement the CelebA experiment results from the awesome [InfoGAN paper](https://arxiv.org/pdf/1606.03657v1.pdf) (Chen et al.).
+# 
+# My relevant additions to this repository (which contains the code published by the authors) are adding the "celebA" model to [infogan/models/regularized_gan.py](infogan/models/regularized_gan.py) and some small adjustments to [infogan/algos/infogan_trainer.py](infogan/algos/infogan_trainer.py) to allow for generating samples after training.
+
 # In[1]:
 
 from __future__ import print_function
@@ -55,7 +61,7 @@ c3_celebA_latent_spec = [
 c3_celebA_image_size = 32
 
 
-# In[ ]:
+# In[5]:
 
 dataset = CelebADataset()  # The full dataset is enormous (202,599 frames).
 
@@ -64,7 +70,7 @@ print("Split {} images into training set.".format(len(dataset.train.images)))
 print("Image shape: ",dataset.image_shape)
 
 
-# In[ ]:
+# In[6]:
 
 model = RegularizedGAN(
     output_dist=MeanBernoulli(dataset.image_dim),
@@ -76,7 +82,7 @@ model = RegularizedGAN(
 )
 
 
-# In[ ]:
+# In[7]:
 
 now = datetime.datetime.now(dateutil.tz.tzlocal())
 timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
@@ -104,12 +110,12 @@ algo = InfoGANTrainer(
 )
 
 
-# In[ ]:
+# In[8]:
 
 #algo.visualize_all_factors()  # ... what does this do?
 
 
-# In[ ]:
+# In[9]:
 
 sess = tf.Session()
 
@@ -121,7 +127,7 @@ algo.train(sess=sess)
 
 
 
-# In[ ]:
+# In[16]:
 
 def play_frames_clip(frames):
     ''' frames -- a list/array of np.array images. Plays all frames in the notebook as a clip.'''
@@ -135,7 +141,6 @@ def play_frames_clip(frames):
 
 print("Displaying some training Images...")
 play_frames_clip([frame.reshape(dataset.image_shape) for frame in dataset.train.images[10:20]])
-print(dataset.image_shape)
 
 
 # In[ ]:
@@ -143,13 +148,19 @@ print(dataset.image_shape)
 
 
 
-# In[ ]:
+# ## Using the Trained Model: Generating Images
+# 
+# Alright! Now we've trained the model on our data, and we can use it to generate some new images!
+# 
+# We can just reuse the tiny piece of the TensorFlow graph that generates fake samples, $x$, from the learned distribution. We'll reuse the same `sess` variable that we used for training, so that all the variables still hold their learned values!
+
+# In[43]:
 
 generated_images = sess.run(algo.fake_x)
 generated_images.shape
 
 
-# In[ ]:
+# In[61]:
 
 print("Displaying a batch of GENERATED Images...")
 play_frames_clip([frame.reshape(dataset.image_shape) for frame in generated_images])

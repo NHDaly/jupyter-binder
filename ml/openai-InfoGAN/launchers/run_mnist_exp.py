@@ -11,6 +11,7 @@ from infogan.misc.utils import mkdir_p
 import dateutil
 import dateutil.tz
 import datetime
+import scipy.misc
 
 if __name__ == "__main__":
 
@@ -19,6 +20,8 @@ if __name__ == "__main__":
 
     root_log_dir = "logs/mnist"
     root_checkpoint_dir = "ckt/mnist"
+    root_generated_images_dir = "gen/mnist"
+
     batch_size = 128
     updates_per_epoch = 100
     max_epoch = 50
@@ -27,9 +30,11 @@ if __name__ == "__main__":
 
     log_dir = os.path.join(root_log_dir, exp_name)
     checkpoint_dir = os.path.join(root_checkpoint_dir, exp_name)
+    gen_dir = os.path.join(root_generated_images_dir, exp_name)
 
     mkdir_p(log_dir)
     mkdir_p(checkpoint_dir)
+    mkdir_p(gen_dir)
 
     dataset = MnistDataset()
 
@@ -62,4 +67,15 @@ if __name__ == "__main__":
         discriminator_learning_rate=2e-4,
     )
 
-    algo.train()
+    sess = tf.Session()
+    algo.train(sess)
+
+    # Use the trained model to generate one batch of images!
+    generated_images = sess.run(algo.fake_x)
+
+    print("Saving generated images to " + gen_dir)
+
+    for i,img in enumerate(generated_images):
+        img_file = os.path.join(gen_dir, 'generated_%05d.png' % (i))
+        scipy.misc.toimage(img.reshape(dataset.image_shape[:2]), cmin=0.0, cmax=1.0).save(img_file)
+

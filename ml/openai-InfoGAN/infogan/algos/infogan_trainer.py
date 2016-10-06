@@ -204,6 +204,7 @@ class InfoGANTrainer(object):
             imgs = tf.expand_dims(imgs, 0)
             tf.image_summary("image_%d_%s" % (dist_idx, dist.__class__.__name__), imgs)
 
+
     def train(self, sess = None):
         ''' If a sess is provided, all new variables will be created in it and it won't be closed. '''
         self.init_opt()

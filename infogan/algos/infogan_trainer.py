@@ -205,13 +205,16 @@ class InfoGANTrainer(object):
             tf.image_summary("image_%d_%s" % (dist_idx, dist.__class__.__name__), imgs)
 
 
-    def train(self):
-
+    def train(self, sess = None):
+        ''' If a sess is provided, all new variables will be created in it and it won't be closed. '''
         self.init_opt()
 
         init = tf.initialize_all_variables()
 
-        with tf.Session() as sess:
+        # If the provided sess is not None, this will keep the session open
+        # so that the caller can inspect the results of training.
+        with NonClosingSessionWrapper(sess) as sess_wrapper:
+            sess = sess_wrapper.sess
             sess.run(init)
 
             summary_op = tf.merge_all_summaries()
@@ -257,3 +260,17 @@ class InfoGANTrainer(object):
                 sys.stdout.flush()
                 if np.any(np.isnan(avg_log_vals)):
                     raise ValueError("NaN detected!")
+
+class NonClosingSessionWrapper():
+  '''Wrapper to open and close a new tf.Session iff provided sess is None.'''
+  def __init__(self, sess):
+    self.sess = sess
+  def __enter__(self):
+    self.close_session = True if self.sess is None else False
+    if self.sess is None:
+      self.sess = tf.Session()
+    return self
+
+  def __exit__(self, type, value, traceback):
+    if self.close_session:
+      sess.close()

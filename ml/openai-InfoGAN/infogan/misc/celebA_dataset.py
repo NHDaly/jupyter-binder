@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[18]:
 
 import numpy as np
 import os,sys, re
@@ -14,12 +14,13 @@ if module_path not in sys.path:                          #  relative imports fro
 from infogan.misc.datasets import Dataset
 
 
-# In[2]:
+# In[22]:
 
 def load_all_images_from_dir(directory_path, num_images_to_grab = None, crop_size = (32,32)):
     '''
     num_images_to_grab -- if None, load all images in directory_path, else only load up to num_images_to_grab.
     crop_size -- crops all images to crop_size.
+    returns a list of images as np.arrays.
     '''
     images = []
     for root, dirnames, filenames in os.walk(directory_path):
@@ -30,7 +31,7 @@ def load_all_images_from_dir(directory_path, num_images_to_grab = None, crop_siz
                 filepath = os.path.join(root, filename)
                 image = ndimage.imread(filepath, mode="RGB")
                 image_resized = misc.imresize(image, crop_size)
-                images.append(image_resized)
+                images.append(np.asarray(image_resized))
     return images
 
 def ParitionData(images):
@@ -43,22 +44,24 @@ def ParitionData(images):
     return train_images, cv_images, test_images
 
 
-# In[3]:
+# In[23]:
 
 class CelebADataset(object):
     def __init__(self, num_images_to_grab = None):
         data_directory = "celebA/img_align_celeba/"
         if not os.path.exists(data_directory):
             os.makedirs(data_directory)
-        self.raw_images = load_all_images_from_dir(data_directory, num_images_to_grab, (32,32))
+
+        self.image_dim = 32*32*3
+        self.image_shape = (32,32,3)
+
+        raw_images = load_all_images_from_dir(data_directory, num_images_to_grab, (32,32))
+        self.raw_images = [img.reshape(self.image_shape) for img in raw_images]
         train_images, cv_images, test_images = ParitionData([x.flatten() for x in self.raw_images])
 
         self.train = Dataset(np.asarray(train_images))
         self.validation = Dataset(np.asarray(cv_images))
         self.test = Dataset(np.asarray(test_images))
-
-        self.image_dim = 32*32*3
-        self.image_shape = (32,32,3)
 
     def transform(self, data):
         return data

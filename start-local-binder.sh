@@ -11,6 +11,9 @@ echo ""
 DOCKER_VM_DISPLAY_IP=`ifconfig | pcregrep -M "vboxnet0.*\n.*\n.*" | pcregrep -o "[1-9]+\.[1-9]+\.[1-9]+\.[1-9]+" | head -1`
 
 
+# build the docker container if it doesn't exist
+docker images | grep nhdaly/mybinder || docker build -t nhdaly/mybinder .
+
 # Start the "mybinder" docker instance, and connect to it.
 #  - Mount the repo inside the container.
 #  - Run interactively and expose port 8888.

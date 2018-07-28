@@ -24,9 +24,8 @@ USER main
 
 # Install Julia kernel
 RUN julia -E 'Pkg.add("IJulia")'
-# Install all Julia packages in REQUIRE
-RUN julia -E 'open("REQUIRE", "r") do REQUIRE; for package in readlines(REQUIRE); try Pkg.add(package) end end end'
-
+# Install other Julia packages
+RUN julia -E 'Pkg.add("Plots"); Pkg.add("Blink")'
 
 
 # Install OpenAI's gym

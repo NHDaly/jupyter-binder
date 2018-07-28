@@ -12,15 +12,21 @@ RUN pip install --upgrade https://storage.googleapis.com/tensorflow/linux/cpu/te
 #RUN b.gcr.io/tensorflow/tensorflow:latest
 RUN pip install prettytensor
 
-# Add Julia dependencies
 RUN apt-get update
-RUN apt-get install -y julia libnettle4 && apt-get clean
+
+# Add Julia dependencies
+RUN wget https://julialang-s3.julialang.org/bin/linux/x64/0.6/julia-0.6.4-linux-x86_64.tar.gz
+RUN tar -xzf julia-0.6.4-linux-x86_64.tar.gz
+
+RUN ln -s "$(pwd)/"julia-*/bin/julia /usr/local/bin/julia
 
 USER main
 
 # Install Julia kernel
-RUN julia -e 'Pkg.add("IJulia")'
-RUN julia -e 'Pkg.add("Gadfly")' && julia -e 'Pkg.add("RDatasets")'
+RUN julia -E 'Pkg.add("IJulia")'
+# Install all Julia packages in REQUIRE
+RUN julia -E 'open("REQUIRE", "r") do REQUIRE; for package in readlines(REQUIRE); try Pkg.add(package) end end end'
+
 
 
 # Install OpenAI's gym

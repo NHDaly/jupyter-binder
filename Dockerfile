@@ -15,6 +15,12 @@ RUN pip install prettytensor
 RUN apt-get update
 
 # Add Julia dependencies
+RUN apt-get install -y ca-certificates
+# Fix curl
+RUN mkdir -p /etc/pki/tls/certs
+RUN cp /etc/ssl/certs/ca-certificates.crt /etc/pki/tls/certs/ca-bundle.crt
+
+# Install Julia
 RUN wget https://julialang-s3.julialang.org/bin/linux/x64/0.6/julia-0.6.4-linux-x86_64.tar.gz
 RUN tar -xzf julia-0.6.4-linux-x86_64.tar.gz
 
